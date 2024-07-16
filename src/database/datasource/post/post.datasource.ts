@@ -13,7 +13,7 @@ export const postDataSourceOptions: DataSourceOptions = {
   port: parseInt(process.env.DB_PORT) ?? 5432,
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
-  entities: ['**/entities/*.entity.js'],
+  entities: ['**/entities/post/*.entity.js'],
   migrations: ['**/migrations/*.js'],
   migrationsTableName: 'custom_migration_table',
   namingStrategy: new SnakeNamingStrategy(),
