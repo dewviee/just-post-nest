@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { config } from 'dotenv';
-import getEnv from 'src/utils/get-env';
+import getEnv from '../../../utils/get-env';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
