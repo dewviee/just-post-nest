@@ -8,6 +8,7 @@ import { DatabaseConnectionModule } from './database/database-connection.module'
 import { PostModule } from './v1/post/post.module';
 import { postDataSourceOptions } from './database/datasource/post/post.datasource';
 import { AuthModule } from './v1/auth/auth.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AuthModule } from './v1/auth/auth.module';
     TypeOrmModule.forRoot(postDataSourceOptions),
     PostModule,
     AuthModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],
