@@ -7,6 +7,7 @@ import getEnv from './utils/get-env';
 import { DatabaseConnectionModule } from './database/database-connection.module';
 import { PostModule } from './v1/post/post.module';
 import { postDataSourceOptions } from './database/datasource/post/post.datasource';
+import { AuthModule } from './v1/auth/auth.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { postDataSourceOptions } from './database/datasource/post/post.datasourc
     }),
     TypeOrmModule.forRoot(postDataSourceOptions),
     PostModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
