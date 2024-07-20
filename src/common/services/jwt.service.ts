@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtSignOptions, JwtService as NestJWTService } from '@nestjs/jwt';
-import { DecodeOptions } from 'jsonwebtoken';
+import { DecodeOptions, TokenExpiredError } from 'jsonwebtoken';
 
 @Injectable()
 export class JWTService {
@@ -11,6 +11,14 @@ export class JWTService {
   }
 
   async decode(token: string, options?: DecodeOptions) {
+    try {
+      await this.jwtService.verify(token);
+    } catch (error) {
+      if (error instanceof TokenExpiredError) {
+        throw new UnauthorizedException('Token Expired!');
+      }
+      throw new UnauthorizedException('Invalid token');
+    }
     return this.jwtService.decode(token, options);
   }
 }
