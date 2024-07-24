@@ -3,6 +3,9 @@ import { AppModule } from './app.module';
 import getEnv from './utils/get-env';
 import { config } from 'dotenv';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
 config({ path: `${getEnv()}` });
 async function bootstrap() {
@@ -17,6 +20,10 @@ async function bootstrap() {
 
   app.setGlobalPrefix('/api');
 
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
+
+  dayjs.tz.setDefault(process.env.TZ);
   await app.listen(process.env.PORT);
 }
 bootstrap();
