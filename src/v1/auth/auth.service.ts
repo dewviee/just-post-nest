@@ -10,8 +10,9 @@ import { RegisterDTO } from './dto/register.dto';
 import { PasswordService } from './password.service';
 import { LoginDTO } from './dto/login.dto';
 import { JWTService } from 'src/common/services/jwt.service';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import dayjs from 'dayjs';
+import { IRefreshToken } from './interfaces/token.interface';
 
 @Injectable()
 export class AuthService {
@@ -61,6 +62,16 @@ export class AuthService {
     });
 
     return accessToken;
+  }
+
+  async refreshToken(req: Request) {
+    const refreshToken: string = req.cookies.refreshToken;
+    const data: IRefreshToken = await this.jwtService.decode(refreshToken, {
+      jwtVerifyOptions: { secret: process.env.JWT_SECRET_REFRESH },
+    });
+
+    const accessToken = await this.generateAccessToken(data.payload);
+    return { token: accessToken };
   }
 
   private async generateAccessToken(payload: object) {

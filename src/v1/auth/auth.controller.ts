@@ -1,9 +1,9 @@
-import { Body, Controller, Post, Response } from '@nestjs/common';
+import { Body, Controller, Post, Request, Response } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDTO } from './dto/register.dto';
 import { LoginDTO } from './dto/login.dto';
 import { JWTService } from 'src/common/services/jwt.service';
-import { Response as ResponseEx } from 'express';
+import { Request as RequestEx, Response as ResponseEx } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -23,5 +23,10 @@ export class AuthController {
     response.status(200).json({
       accessToken: accessToken,
     });
+  }
+
+  @Post('/refresh-token')
+  async refreshToken(@Request() request: RequestEx) {
+    return await this.authService.refreshToken(request);
   }
 }
