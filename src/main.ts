@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import getEnv from './utils/get-env';
 import { config } from 'dotenv';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -19,6 +20,8 @@ async function bootstrap() {
   });
 
   app.setGlobalPrefix('/api');
+
+  app.use(cookieParser());
 
   dayjs.extend(utc);
   dayjs.extend(timezone);
