@@ -1,6 +1,6 @@
-export interface IRefreshToken {
+export interface IAuthTokenInfo {
   payload?: object;
-  type: 'refresh' | 'access';
+  type?: 'refresh' | 'access';
   iat?: number;
   exp?: number;
 }

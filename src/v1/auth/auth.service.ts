@@ -12,7 +12,7 @@ import { LoginDTO } from './dto/login.dto';
 import { JWTService } from 'src/common/services/jwt.service';
 import { Request, Response } from 'express';
 import dayjs from 'dayjs';
-import { IRefreshToken } from './interfaces/token.interface';
+import { IAuthTokenInfo } from './interfaces/token.interface';
 
 @Injectable()
 export class AuthService {
@@ -66,7 +66,7 @@ export class AuthService {
 
   async refreshToken(req: Request) {
     const refreshToken: string = req.cookies.refreshToken;
-    const data: IRefreshToken = await this.jwtService.decode(refreshToken, {
+    const data: IAuthTokenInfo = await this.jwtService.decode(refreshToken, {
       jwtVerifyOptions: { secret: process.env.JWT_SECRET_REFRESH },
     });
 
