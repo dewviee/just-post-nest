@@ -32,19 +32,17 @@ export class SessionService {
         },
       );
 
-      const sessionToken = manager.create(RefreshTokenEntity, [
-        {
-          user: user,
-          token: refreshToken,
-          expiredAt: dayjs(refreshTokenInfo.exp).toDate(),
-          accessToken: [
-            {
-              token: accessToken,
-              expiredAt: dayjs(accessTokenInfo.exp).toDate(),
-            },
-          ],
-        },
-      ]);
+      const sessionToken = manager.create(RefreshTokenEntity, {
+        user: user,
+        token: refreshToken,
+        expiredAt: dayjs(refreshTokenInfo.exp).toDate(),
+        accessToken: [
+          {
+            token: accessToken,
+            expiredAt: dayjs(accessTokenInfo.exp).toDate(),
+          },
+        ],
+      });
 
       await manager.save(sessionToken);
     });
