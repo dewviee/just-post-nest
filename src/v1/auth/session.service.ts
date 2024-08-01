@@ -48,4 +48,33 @@ export class SessionService {
       await manager.save(sessionToken);
     });
   }
+
+  async createRefreshTokenSession(
+    manager: EntityManager | Repository<RefreshTokenEntity>,
+    user: UserEntity,
+    refreshToken: string,
+  ) {
+    const rfTokenInfo: IAuthTokenInfo = await this.jwtService.decode(
+      refreshToken,
+      { jwtVerifyOptions: { secret: process.env.JWT_SECRET_REFRESH } },
+    );
+    const rfToken = this.entityManager.create(RefreshTokenEntity, [
+      {
+        token: refreshToken,
+        expiredAt: dayjs(rfTokenInfo.exp).toDate(),
+        user: user,
+      },
+    ]);
+
+    if (
+      manager instanceof Repository &&
+      manager.target === RefreshTokenEntity
+    ) {
+      return await manager.save(rfToken);
+    }
+
+    if (manager instanceof EntityManager) {
+      return await manager.save(rfToken);
+    }
+  }
 }
