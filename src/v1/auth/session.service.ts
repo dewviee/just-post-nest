@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import dayjs from 'dayjs';
 import { RefreshTokenEntity } from 'src/common/entities/post/refresh-token.entity';
-import { EntityManager } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { IAuthTokenInfo } from './interfaces/token.interface';
 import { JWTService } from 'src/common/services/jwt.service';
 import { UserEntity } from 'src/common/entities/post/user.entity';
+import { AccessTokenEntity } from 'src/common/entities/post/access-token.entity';
 
 @Injectable()
 export class SessionService {
@@ -75,6 +76,32 @@ export class SessionService {
 
     if (manager instanceof EntityManager) {
       return await manager.save(rfToken);
+    }
+  }
+
+  async createAccessTokenSession(
+    manager: EntityManager | Repository<AccessTokenEntity>,
+    rfToken: RefreshTokenEntity,
+    accessToken: string,
+  ) {
+    const acTokenInfo: IAuthTokenInfo = await this.jwtService.decode(
+      accessToken,
+      {
+        jwtVerifyOptions: { secret: process.env.JWT_SECRET_ACCESS },
+      },
+    );
+    const acToken = this.entityManager.create(AccessTokenEntity, {
+      token: accessToken,
+      expiredAt: dayjs(acTokenInfo.exp).toDate(),
+      refreshToken: rfToken,
+    });
+
+    if (manager instanceof Repository && manager.target === AccessTokenEntity) {
+      return await manager.save(acToken);
+    }
+
+    if (manager instanceof EntityManager) {
+      return await manager.save(acToken);
     }
   }
 }
