@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from 'src/common/entities/post/user.entity';
 import { PasswordService } from './password.service';
 import { CommonModule } from 'src/common/common.module';
+import { SessionService } from './session.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity]), CommonModule],
   controllers: [AuthController],
-  providers: [AuthService, PasswordService],
+  providers: [AuthService, PasswordService, SessionService],
 })
 export class AuthModule {}
