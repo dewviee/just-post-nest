@@ -3,9 +3,9 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from 'src/common/entities/post/user.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { RegisterDTO } from './dto/register.dto';
 import { PasswordService } from './password.service';
 import { LoginDTO } from './dto/login.dto';
@@ -13,14 +13,18 @@ import { JWTService } from 'src/common/services/jwt.service';
 import { Request, Response } from 'express';
 import dayjs from 'dayjs';
 import { IAuthTokenInfo } from './interfaces/token.interface';
+import { SessionService } from './session.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
+    @InjectEntityManager()
+    private readonly entityManager: EntityManager,
     private readonly passwordService: PasswordService,
     private readonly jwtService: JWTService,
+    private readonly sessionService: SessionService,
   ) {}
 
   async register(body: RegisterDTO) {
@@ -34,10 +38,17 @@ export class AuthService {
   }
 
   async login(body: LoginDTO, res: Response) {
-    const user = await this.userRepo.findOneBy([
-      { email: body.identifier },
-      { username: body.identifier },
-    ]);
+    const user = await this.userRepo.findOne({
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        password: true,
+        refreshToken: true,
+      },
+      relations: { refreshToken: true },
+      where: [{ email: body.identifier }, { username: body.identifier }],
+    });
 
     if (!user) {
       throw new BadRequestException('User not exist or password not match');
@@ -53,8 +64,12 @@ export class AuthService {
 
     const payload = { username: user.username };
 
-    const accessToken = await this.generateAccessToken(payload);
-    const refreshToken = await this.generateRefreshToken(payload);
+    const [accessToken, refreshToken] = await Promise.all([
+      this.generateAccessToken(payload),
+      this.generateRefreshToken(payload),
+    ]);
+
+    await this.sessionService.login(accessToken, refreshToken, user);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
