@@ -9,6 +9,7 @@ import { PostModule } from './v1/post/post.module';
 import { postDataSourceOptions } from './database/datasource/post/post.datasource';
 import { AuthModule } from './v1/auth/auth.module';
 import { CommonModule } from './common/common.module';
+import { UserModule } from './v1/user/user.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CommonModule } from './common/common.module';
     PostModule,
     AuthModule,
     CommonModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
