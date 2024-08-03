@@ -9,6 +9,8 @@ import { PostModule } from './v1/post/post.module';
 import { postDataSourceOptions } from './database/datasource/post/post.datasource';
 import { AuthModule } from './v1/auth/auth.module';
 import { CommonModule } from './common/common.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './common/guards/auth.guard';
 import { UserModule } from './v1/user/user.module';
 
 @Module({
@@ -25,6 +27,6 @@ import { UserModule } from './v1/user/user.module';
     UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [{ provide: APP_GUARD, useClass: AuthGuard }, AppService],
 })
 export class AppModule {}
