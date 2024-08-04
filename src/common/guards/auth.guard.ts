@@ -5,10 +5,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JWTService } from '../services/jwt.service';
-import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { UserService } from 'src/v1/user/user.service';
+import { extractAccessTokenFromHeader } from 'src/utils/extract-token-from-request';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -23,7 +23,7 @@ export class AuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const token = extractAccessTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException();
     }
@@ -38,11 +38,6 @@ export class AuthGuard implements CanActivate {
     request['user'] = await this.userService.getUserInfoFromAccessToken(token);
 
     return true;
-  }
-
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
   }
 
   private isPublicRoute(context: ExecutionContext) {
