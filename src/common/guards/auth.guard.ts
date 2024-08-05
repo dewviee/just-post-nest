@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { JWTService } from '../services/jwt.service';
 import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { UserService } from 'src/v1/user/user.service';
 import { extractAccessTokenFromHeader } from 'src/utils/extract-token-from-request';
+import { isPublicRoute } from 'src/utils/is-public-route';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -18,7 +18,7 @@ export class AuthGuard implements CanActivate {
     private readonly userService: UserService,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    if (this.isPublicRoute(context)) {
+    if (isPublicRoute(context, this.reflector)) {
       return true;
     }
 
@@ -38,12 +38,5 @@ export class AuthGuard implements CanActivate {
     request['user'] = await this.userService.getUserInfoFromAccessToken(token);
 
     return true;
-  }
-
-  private isPublicRoute(context: ExecutionContext) {
-    return this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
   }
 }
