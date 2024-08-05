@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import dayjs from 'dayjs';
 import { RefreshTokenEntity } from 'src/common/entities/post/refresh-token.entity';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, Equal, Repository } from 'typeorm';
 import { IAuthTokenInfo } from './interfaces/token.interface';
 import { JWTService } from 'src/common/services/jwt.service';
 import { UserEntity } from 'src/common/entities/post/user.entity';
 import { AccessTokenEntity } from 'src/common/entities/post/access-token.entity';
+import { IAuthToken } from 'src/common/interfaces/jwt.interface';
 
 @Injectable()
 export class SessionService {
@@ -101,5 +102,32 @@ export class SessionService {
     if (manager instanceof EntityManager) {
       return await manager.save(acToken);
     }
+  }
+
+  async isTokenRevoke(token: IAuthToken) {
+    const accessToken = await this.entityManager.findOne(AccessTokenEntity, {
+      select: {
+        id: true,
+        token: true,
+        refreshToken: {
+          id: true,
+          token: true,
+        },
+      },
+      relations: {
+        refreshToken: true,
+      },
+      where: {
+        token: Equal(token.accessToken),
+        refreshToken: {
+          token: Equal(token.refreshToken),
+        },
+      },
+    });
+
+    if (!accessToken) {
+      return true;
+    }
+    return false;
   }
 }

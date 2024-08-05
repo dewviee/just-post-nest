@@ -12,6 +12,7 @@ import { CommonModule } from './common/common.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './common/guards/auth.guard';
 import { UserModule } from './v1/user/user.module';
+import { TokenRevokeGuard } from './common/guards/token-revoke.guard';
 
 @Module({
   imports: [
@@ -27,6 +28,10 @@ import { UserModule } from './v1/user/user.module';
     UserModule,
   ],
   controllers: [AppController],
-  providers: [{ provide: APP_GUARD, useClass: AuthGuard }, AppService],
+  providers: [
+    { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_GUARD, useClass: TokenRevokeGuard },
+    AppService,
+  ],
 })
 export class AppModule {}
