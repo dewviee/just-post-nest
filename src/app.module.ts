@@ -7,6 +7,12 @@ import getEnv from './utils/get-env';
 import { DatabaseConnectionModule } from './database/database-connection.module';
 import { PostModule } from './v1/post/post.module';
 import { postDataSourceOptions } from './database/datasource/post/post.datasource';
+import { AuthModule } from './v1/auth/auth.module';
+import { CommonModule } from './common/common.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './common/guards/auth.guard';
+import { UserModule } from './v1/user/user.module';
+import { TokenRevokeGuard } from './common/guards/token-revoke.guard';
 
 @Module({
   imports: [
@@ -17,8 +23,15 @@ import { postDataSourceOptions } from './database/datasource/post/post.datasourc
     }),
     TypeOrmModule.forRoot(postDataSourceOptions),
     PostModule,
+    AuthModule,
+    CommonModule,
+    UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_GUARD, useClass: TokenRevokeGuard },
+    AppService,
+  ],
 })
 export class AppModule {}
