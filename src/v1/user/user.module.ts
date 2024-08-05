@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AccessTokenEntity } from 'src/common/entities/post/access-token.entity';
+import { AccessTokenEntity } from 'src/common/entities/post/session-access-token.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([AccessTokenEntity])],

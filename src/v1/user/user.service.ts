@@ -1,5 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { AccessTokenEntity } from 'src/common/entities/post/access-token.entity';
+import { AccessTokenEntity } from 'src/common/entities/post/session-access-token.entity';
 import { Equal, Repository } from 'typeorm';
 
 export class UserService {
