@@ -2,9 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { RefreshTokenEntity } from './refresh-token.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity {
@@ -25,4 +27,7 @@ export class UserEntity {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
+
+  @OneToMany(() => RefreshTokenEntity, (refreshToken) => refreshToken.user)
+  refreshToken: RefreshTokenEntity[];
 }
