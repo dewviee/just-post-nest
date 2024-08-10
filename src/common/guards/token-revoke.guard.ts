@@ -1,13 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { IAuthToken } from '../interfaces/jwt.interface';
-import { SessionService } from 'src/v1/auth/session.service';
-import { TokenRevokeException } from '../exceptions/token-revoke.exception';
-import { isPublicRoute } from 'src/utils/is-public-route';
 import { Reflector } from '@nestjs/core';
 import {
   extractAccessTokenFromHeader,
   extractRefreshTokenFromHeader,
 } from 'src/utils/extract-token-from-request';
+import { isPublicRoute } from 'src/utils/is-public-route';
+import { SessionService } from 'src/v1/auth/session.service';
+import { TokenRevokeException } from '../exceptions/token-revoke.exception';
+import { IAuthToken } from '../interfaces/jwt.interface';
 
 @Injectable()
 export class TokenRevokeGuard implements CanActivate {

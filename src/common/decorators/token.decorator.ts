@@ -1,9 +1,9 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { IAuthToken } from '../interfaces/jwt.interface';
 import {
   extractAccessTokenFromHeader,
   extractRefreshTokenFromHeader,
 } from 'src/utils/extract-token-from-request';
+import { IAuthToken } from '../interfaces/jwt.interface';
 
 export const Token = createParamDecorator(
   (ctx: ExecutionContext): IAuthToken => {
