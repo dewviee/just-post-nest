@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import {
   extractAccessTokenFromHeader,
@@ -6,7 +11,8 @@ import {
 } from 'src/utils/extract-token-from-request';
 import { isPublicRoute } from 'src/utils/is-public-route';
 import { SessionService } from 'src/v1/auth/session.service';
-import { TokenRevokeException } from '../exceptions/token-revoke.exception';
+import { EAuthErrCode } from '../enum/auth.enum';
+import { CustomErrorException } from '../exceptions/custom-error.exception';
 import { IAuthToken } from '../interfaces/jwt.interface';
 
 @Injectable()
@@ -28,7 +34,11 @@ export class TokenRevokeGuard implements CanActivate {
     };
 
     if (await this.sessionService.isTokenRevoke(token)) {
-      throw new TokenRevokeException();
+      throw new CustomErrorException(
+        'token has been revoked',
+        HttpStatus.UNAUTHORIZED,
+        { errorCode: EAuthErrCode.ACCESS_TOKEN_REVOKE },
+      );
     }
     return true;
   }
