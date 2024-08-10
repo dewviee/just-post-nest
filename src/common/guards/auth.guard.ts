@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -8,6 +9,8 @@ import { Reflector } from '@nestjs/core';
 import { extractAccessTokenFromHeader } from 'src/utils/extract-token-from-request';
 import { isPublicRoute } from 'src/utils/is-public-route';
 import { UserService } from 'src/v1/user/user.service';
+import { EAuthErrCode } from '../enum/auth.enum';
+import { CustomErrorException } from '../exceptions/custom-error.exception';
 import { JWTService } from '../services/jwt.service';
 
 @Injectable()
@@ -25,7 +28,7 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = extractAccessTokenFromHeader(request);
     if (!token) {
-      throw new UnauthorizedException();
+      this.errorTokenNotFound();
     }
 
     try {
@@ -38,5 +41,11 @@ export class AuthGuard implements CanActivate {
     request['user'] = await this.userService.getUserInfoFromAccessToken(token);
 
     return true;
+  }
+
+  private errorTokenNotFound() {
+    throw new CustomErrorException('Token Not Found', HttpStatus.UNAUTHORIZED, {
+      errorCode: EAuthErrCode.TOKEN_INVALID,
+    });
   }
 }
