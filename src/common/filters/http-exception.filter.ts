@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import dayjs from 'dayjs';
 import { Request, Response } from 'express';
+import { CustomErrorException } from '../exceptions/custom-error.exception';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -29,6 +30,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
       timestamp: dayjs().toDate().toISOString(),
     };
 
+    if (exception instanceof CustomErrorException) {
+      resPayload = { ...resPayload, errorCode: exception.errorCode };
+    }
     response.status(status).json(resPayload);
   }
 }
