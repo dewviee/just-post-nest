@@ -130,4 +130,18 @@ export class SessionService {
     }
     return false;
   }
+
+  async isRefreshTokenRevoke(token: string) {
+    const refreshToken = await this.entityManager.findOneBy(
+      RefreshTokenEntity,
+      {
+        token: Equal(token),
+      },
+    );
+
+    if (refreshToken) {
+      return false;
+    }
+    return true;
+  }
 }
