@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -7,6 +8,8 @@ import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import dayjs from 'dayjs';
 import { Request, Response } from 'express';
 import { UserEntity } from 'src/common/entities/post/user.entity';
+import { EAuthErrCode } from 'src/common/enum/auth.enum';
+import { CustomErrorException } from 'src/common/exceptions/custom-error.exception';
 import { JWTService } from 'src/common/services/jwt.service';
 import { EntityManager, Repository } from 'typeorm';
 import { LoginDTO } from './dto/login.dto';
@@ -84,6 +87,14 @@ export class AuthService {
     const data: IAuthTokenInfo = await this.jwtService.decode(refreshToken, {
       jwtVerifyOptions: { secret: process.env.JWT_SECRET_REFRESH },
     });
+
+    if (await this.sessionService.isRefreshTokenRevoke(refreshToken)) {
+      throw new CustomErrorException(
+        'token has been revoked',
+        HttpStatus.UNAUTHORIZED,
+        { errorCode: EAuthErrCode.REFRESH_TOKEN_REVOKE },
+      );
+    }
 
     const accessToken = await this.generateAccessToken(data.payload);
     return { token: accessToken };
