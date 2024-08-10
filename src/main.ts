@@ -1,12 +1,12 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import getEnv from './utils/get-env';
-import { config } from 'dotenv';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+import { config } from 'dotenv';
+import { AppModule } from './app.module';
+import getEnv from './utils/get-env';
 
 config({ path: `${getEnv()}` });
 async function bootstrap() {

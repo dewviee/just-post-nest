@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
-import { JWTService } from './services/jwt.service';
 import { JwtModule } from '@nestjs/jwt';
+import { JWTService } from './services/jwt.service';
 
 @Global()
 @Module({
