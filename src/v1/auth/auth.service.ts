@@ -17,6 +17,7 @@ import { RegisterDTO } from './dto/register.dto';
 import { IAuthTokenInfo } from './interfaces/token.interface';
 import { PasswordService } from './password.service';
 import { SessionService } from './session.service';
+import { TokenService } from './token.service';
 
 @Injectable()
 export class AuthService {
@@ -28,6 +29,7 @@ export class AuthService {
     private readonly passwordService: PasswordService,
     private readonly jwtService: JWTService,
     private readonly sessionService: SessionService,
+    private readonly tokenService: TokenService,
   ) {}
 
   async register(body: RegisterDTO) {
@@ -68,8 +70,8 @@ export class AuthService {
     const payload = { username: user.username };
 
     const [accessToken, refreshToken] = await Promise.all([
-      this.generateAccessToken(payload),
-      this.generateRefreshToken(payload),
+      this.tokenService.generateAccessToken(payload),
+      this.tokenService.generateRefreshToken(payload),
     ]);
 
     await this.sessionService.login(accessToken, refreshToken, user);
@@ -96,27 +98,9 @@ export class AuthService {
       );
     }
 
-    const accessToken = await this.generateAccessToken(data.payload);
+    const accessToken = await this.tokenService.generateAccessToken(
+      data.payload,
+    );
     return { token: accessToken };
-  }
-
-  private async generateAccessToken(payload: object) {
-    return await this.jwtService.sign(
-      { ...payload, type: 'access' },
-      {
-        expiresIn: '30m',
-        secret: process.env.JWT_SECRET_ACCESS,
-      },
-    );
-  }
-
-  private async generateRefreshToken(payload: object) {
-    return await this.jwtService.sign(
-      { payload, type: 'refresh' },
-      {
-        expiresIn: '7d',
-        secret: process.env.JWT_SECRET_REFRESH,
-      },
-    );
   }
 }
