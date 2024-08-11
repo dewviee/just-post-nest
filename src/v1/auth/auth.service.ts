@@ -98,9 +98,12 @@ export class AuthService {
       );
     }
 
-    const accessToken = await this.tokenService.generateAccessToken(
-      data.payload,
-    );
+    const [accessToken, rfTokenEnt] = await Promise.all([
+      this.tokenService.generateAccessToken(data.payload),
+      this.tokenService.findRefreshTokenFromToken(refreshToken),
+    ]);
+
+    await this.sessionService.createAccessTokenSession(rfTokenEnt, accessToken);
     return { token: accessToken };
   }
 }
