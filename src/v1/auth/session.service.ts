@@ -15,6 +15,8 @@ export class SessionService {
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
     private readonly jwtService: JWTService,
+    @InjectRepository(AccessTokenEntity)
+    private readonly acTokenRepo: Repository<AccessTokenEntity>,
     @InjectRepository(RefreshTokenEntity)
     private readonly rfTokenRepo: Repository<RefreshTokenEntity>,
   ) {}
@@ -51,11 +53,7 @@ export class SessionService {
     });
   }
 
-  async createRefreshTokenSession(
-    manager: EntityManager | Repository<RefreshTokenEntity>,
-    user: UserEntity,
-    refreshToken: string,
-  ) {
+  async createRefreshTokenSession(user: UserEntity, refreshToken: string) {
     const rfTokenInfo: IAuthTokenInfo = await this.jwtService.decode(
       refreshToken,
       { jwtVerifyOptions: { secret: process.env.JWT_SECRET_REFRESH } },
@@ -68,16 +66,7 @@ export class SessionService {
       },
     ]);
 
-    if (
-      manager instanceof Repository &&
-      manager.target === RefreshTokenEntity
-    ) {
-      return await manager.save(rfToken);
-    }
-
-    if (manager instanceof EntityManager) {
-      return await manager.save(rfToken);
-    }
+    return await this.rfTokenRepo.save(rfToken);
   }
 
   async createAccessTokenSession(
