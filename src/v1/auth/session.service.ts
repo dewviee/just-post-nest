@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectEntityManager } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import dayjs from 'dayjs';
 import { AccessTokenEntity } from 'src/common/entities/post/session-access-token.entity';
 import { RefreshTokenEntity } from 'src/common/entities/post/session-refresh-token.entity';
@@ -15,6 +15,8 @@ export class SessionService {
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
     private readonly jwtService: JWTService,
+    @InjectRepository(RefreshTokenEntity)
+    private readonly rfTokenRepo: Repository<RefreshTokenEntity>,
   ) {}
 
   async login(accessToken: string, refreshToken: string, user: UserEntity) {
@@ -79,7 +81,6 @@ export class SessionService {
   }
 
   async createAccessTokenSession(
-    manager: EntityManager | Repository<AccessTokenEntity>,
     rfToken: RefreshTokenEntity,
     accessToken: string,
   ) {
@@ -95,13 +96,7 @@ export class SessionService {
       refreshToken: rfToken,
     });
 
-    if (manager instanceof Repository && manager.target === AccessTokenEntity) {
-      return await manager.save(acToken);
-    }
-
-    if (manager instanceof EntityManager) {
-      return await manager.save(acToken);
-    }
+    return await this.acTokenRepo.save(acToken);
   }
 
   async isTokenRevoke(token: IAuthToken) {
