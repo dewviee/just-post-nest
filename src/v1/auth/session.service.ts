@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectEntityManager } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import dayjs from 'dayjs';
 import { AccessTokenEntity } from 'src/common/entities/post/session-access-token.entity';
 import { RefreshTokenEntity } from 'src/common/entities/post/session-refresh-token.entity';
@@ -15,6 +15,10 @@ export class SessionService {
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
     private readonly jwtService: JWTService,
+    @InjectRepository(AccessTokenEntity)
+    private readonly acTokenRepo: Repository<AccessTokenEntity>,
+    @InjectRepository(RefreshTokenEntity)
+    private readonly rfTokenRepo: Repository<RefreshTokenEntity>,
   ) {}
 
   async login(accessToken: string, refreshToken: string, user: UserEntity) {
@@ -49,11 +53,7 @@ export class SessionService {
     });
   }
 
-  async createRefreshTokenSession(
-    manager: EntityManager | Repository<RefreshTokenEntity>,
-    user: UserEntity,
-    refreshToken: string,
-  ) {
+  async createRefreshTokenSession(user: UserEntity, refreshToken: string) {
     const rfTokenInfo: IAuthTokenInfo = await this.jwtService.decode(
       refreshToken,
       { jwtVerifyOptions: { secret: process.env.JWT_SECRET_REFRESH } },
@@ -66,20 +66,10 @@ export class SessionService {
       },
     ]);
 
-    if (
-      manager instanceof Repository &&
-      manager.target === RefreshTokenEntity
-    ) {
-      return await manager.save(rfToken);
-    }
-
-    if (manager instanceof EntityManager) {
-      return await manager.save(rfToken);
-    }
+    return await this.rfTokenRepo.save(rfToken);
   }
 
   async createAccessTokenSession(
-    manager: EntityManager | Repository<AccessTokenEntity>,
     rfToken: RefreshTokenEntity,
     accessToken: string,
   ) {
@@ -95,13 +85,7 @@ export class SessionService {
       refreshToken: rfToken,
     });
 
-    if (manager instanceof Repository && manager.target === AccessTokenEntity) {
-      return await manager.save(acToken);
-    }
-
-    if (manager instanceof EntityManager) {
-      return await manager.save(acToken);
-    }
+    return await this.acTokenRepo.save(acToken);
   }
 
   async isTokenRevoke(token: IAuthToken) {

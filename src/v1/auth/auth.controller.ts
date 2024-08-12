@@ -29,7 +29,7 @@ export class AuthController {
   }
 
   @Public()
-  @Post('/refresh-token')
+  @Post('/refresh-access-token')
   async refreshToken(@Request() request: RequestEx) {
     return await this.authService.refreshToken(request);
   }
