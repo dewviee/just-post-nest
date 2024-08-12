@@ -40,11 +40,11 @@ export class SessionService {
       const sessionToken = manager.create(RefreshTokenEntity, {
         user: user,
         token: refreshToken,
-        expiredAt: dayjs(refreshTokenInfo.exp).toDate(),
+        expiredAt: dayjs(refreshTokenInfo.exp * 1000).toDate(),
         accessToken: [
           {
             token: accessToken,
-            expiredAt: dayjs(accessTokenInfo.exp).toDate(),
+            expiredAt: dayjs(accessTokenInfo.exp * 1000).toDate(),
           },
         ],
       });
@@ -61,7 +61,7 @@ export class SessionService {
     const rfToken = this.entityManager.create(RefreshTokenEntity, [
       {
         token: refreshToken,
-        expiredAt: dayjs(rfTokenInfo.exp).toDate(),
+        expiredAt: dayjs(rfTokenInfo.exp * 1000).toDate(),
         user: user,
       },
     ]);
@@ -81,7 +81,7 @@ export class SessionService {
     );
     const acToken = this.entityManager.create(AccessTokenEntity, {
       token: accessToken,
-      expiredAt: dayjs(acTokenInfo.exp).toDate(),
+      expiredAt: dayjs(acTokenInfo.exp * 1000).toDate(),
       refreshToken: rfToken,
     });
 
