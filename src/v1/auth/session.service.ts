@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import dayjs from 'dayjs';
 import { AccessTokenEntity } from 'src/common/entities/post/session-access-token.entity';
@@ -127,5 +127,20 @@ export class SessionService {
       return false;
     }
     return true;
+  }
+
+  async revokeRefreshToken(refreshTokenString: string) {
+    const refreshToken = await this.rfTokenRepo.findOneBy({
+      token: Equal(refreshTokenString),
+    });
+
+    if (!refreshToken) {
+      throw new NotFoundException();
+    }
+
+    await this.entityManager.transaction(async (manager: EntityManager) => {
+      await manager.delete(AccessTokenEntity, { refreshToken: refreshToken });
+      await manager.delete(RefreshTokenEntity, { token: refreshToken.token });
+    });
   }
 }

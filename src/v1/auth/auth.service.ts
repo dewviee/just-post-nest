@@ -147,4 +147,10 @@ export class AuthService {
       expires: dayjs().add(7, 'day').toDate(),
     });
   }
+
+  async revokeRefreshToken(req: Request) {
+    const refreshTokenString: string = req.cookies.refreshToken;
+
+    await this.sessionService.revokeRefreshToken(refreshTokenString);
+  }
 }

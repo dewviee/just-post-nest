@@ -43,4 +43,9 @@ export class AuthController {
     await this.authService.refreshRefreshToken(request, response);
     response.status(200).json();
   }
+
+  @Post('/revoke/refresh-token')
+  async revokeRefreshToken(@Request() req: RequestEx) {
+    await this.authService.revokeRefreshToken(req);
+  }
 }
