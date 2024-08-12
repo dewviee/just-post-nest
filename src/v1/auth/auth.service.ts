@@ -7,11 +7,12 @@ import {
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import dayjs from 'dayjs';
 import { Request, Response } from 'express';
+import { RefreshTokenEntity } from 'src/common/entities/post/session-refresh-token.entity';
 import { UserEntity } from 'src/common/entities/post/user.entity';
 import { EAuthErrCode } from 'src/common/enum/auth.enum';
 import { CustomErrorException } from 'src/common/exceptions/custom-error.exception';
 import { JWTService } from 'src/common/services/jwt.service';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, Equal, Repository } from 'typeorm';
 import { LoginDTO } from './dto/login.dto';
 import { RegisterDTO } from './dto/register.dto';
 import { IAuthTokenInfo } from './interfaces/token.interface';
@@ -105,5 +106,45 @@ export class AuthService {
 
     await this.sessionService.createAccessTokenSession(rfTokenEnt, accessToken);
     return { token: accessToken };
+  }
+
+  async refreshRefreshToken(req: Request, res: Response) {
+    const oldRefreshToken: string = req.cookies.refreshToken;
+
+    const refreshToken = await this.entityManager.findOne(RefreshTokenEntity, {
+      where: {
+        token: Equal(oldRefreshToken),
+      },
+      relations: {
+        user: true,
+      },
+    });
+
+    if (!refreshToken) {
+      throw new CustomErrorException('token revoked', HttpStatus.UNAUTHORIZED, {
+        errorCode: EAuthErrCode.REFRESH_TOKEN_REVOKE,
+      });
+    }
+
+    if (dayjs(refreshToken.expiredAt).isBefore(dayjs())) {
+      throw new CustomErrorException('token expired', HttpStatus.UNAUTHORIZED, {
+        errorCode: EAuthErrCode.REFRESH_TOKEN_EXPIRED,
+      });
+    }
+
+    const payload = { username: refreshToken.user.username };
+
+    const newRefreshToken =
+      await this.tokenService.generateRefreshToken(payload);
+
+    await this.sessionService.createRefreshTokenSession(
+      refreshToken.user,
+      newRefreshToken,
+    );
+
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      expires: dayjs().add(7, 'day').toDate(),
+    });
   }
 }

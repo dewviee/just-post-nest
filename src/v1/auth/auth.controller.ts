@@ -33,4 +33,14 @@ export class AuthController {
   async refreshToken(@Request() request: RequestEx) {
     return await this.authService.refreshToken(request);
   }
+
+  @Public()
+  @Post('/refresh/refresh-token')
+  async refreshRefreshToken(
+    @Request() request: RequestEx,
+    @Response() response: ResponseEx,
+  ) {
+    await this.authService.refreshRefreshToken(request, response);
+    response.status(200).json();
+  }
 }
