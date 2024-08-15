@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import dayjs from 'dayjs';
 import { AccessTokenEntity } from 'src/common/entities/post/session-access-token.entity';
@@ -127,5 +131,131 @@ export class SessionService {
       return false;
     }
     return true;
+  }
+
+  async revokeRefreshToken(refreshTokenString: string) {
+    const refreshToken = await this.rfTokenRepo.findOneBy({
+      token: Equal(refreshTokenString),
+    });
+
+    if (!refreshToken) {
+      throw new NotFoundException();
+    }
+
+    await this.entityManager.transaction(async (manager: EntityManager) => {
+      await manager.delete(AccessTokenEntity, { refreshToken: refreshToken });
+      await manager.delete(RefreshTokenEntity, { token: refreshToken.token });
+    });
+  }
+
+  async revokeRefreshTokenByID(id: string, user: UserEntity) {
+    const refreshToken = await this.entityManager.findOne(RefreshTokenEntity, {
+      select: { id: true, user: {} },
+      where: {
+        id: Equal(id),
+        user: {
+          id: Equal(user.id),
+        },
+      },
+      relations: {
+        user: true,
+      },
+    });
+    if (!refreshToken) {
+      throw new BadRequestException('token not found');
+    }
+
+    await this.entityManager.transaction(async (manager: EntityManager) => {
+      await manager.delete(AccessTokenEntity, { refreshToken: refreshToken });
+      await manager.delete(RefreshTokenEntity, { id: refreshToken.id });
+    });
+  }
+
+  // TODO: Need to make this code not select all item at once. Can cause massive Read and Delete Query
+  // TODO: And write better code. TOO MANY {}! ||orz|
+  async revokeAllToken(user: UserEntity) {
+    const refreshTokenEntities = await this.rfTokenRepo.find({
+      relations: { user: true },
+      select: {
+        id: true,
+        user: {},
+      },
+      where: {
+        user: {
+          id: Equal(user.id),
+        },
+      },
+    });
+
+    // Prepare data for queue query
+    const rfTokenQueues = refreshTokenEntities.reduce((acc, rfToken, i) => {
+      if (i % 10 === 0) {
+        acc.push([]);
+      }
+
+      acc[acc.length - 1].push(rfToken);
+      return acc;
+    }, []);
+
+    // Search All Access Token from all refresh token
+    const acTokenEntities: AccessTokenEntity[] = [];
+    for (const rfTokenList of rfTokenQueues) {
+      const jobs = rfTokenList.map(async (rfToken: RefreshTokenEntity) => {
+        const accessTokens = await this.acTokenRepo.find({
+          select: {
+            id: true,
+            refreshToken: {},
+          },
+          where: {
+            refreshToken: {
+              id: Equal(rfToken.id),
+            },
+          },
+          relations: {
+            refreshToken: true,
+          },
+        });
+        if (accessTokens) {
+          accessTokens.forEach((acToken) => {
+            acTokenEntities.push(acToken);
+          });
+        }
+      });
+      await Promise.all(jobs); // Wait for all jobs in the current batch to finish
+    }
+
+    // Prepare data for queue query
+    const acTokenQueues = acTokenEntities.reduce((acc, acToken, i) => {
+      if (i % 10 === 0) {
+        acc.push([]);
+      }
+      acc[acc.length - 1].push(acToken);
+      return acc;
+    }, []);
+
+    // Create transactions to remove all token
+    await this.entityManager.transaction(async (manager: EntityManager) => {
+      const acTokenJobs = acTokenQueues.map(
+        async (acTokens: AccessTokenEntity[]) => {
+          const jobs = acTokens.map((acToken) =>
+            manager.delete(AccessTokenEntity, { id: acToken.id }),
+          );
+
+          await Promise.all(jobs);
+        },
+      );
+
+      const rfTokenJobs = rfTokenQueues.map(
+        async (rfTokens: RefreshTokenEntity[]) => {
+          const jobs = rfTokens.map((rfToken) =>
+            manager.delete(RefreshTokenEntity, { id: rfToken.id }),
+          );
+
+          await Promise.all(jobs);
+        },
+      );
+
+      await Promise.all([...acTokenJobs, ...rfTokenJobs]);
+    });
   }
 }
