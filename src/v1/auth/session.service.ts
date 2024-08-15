@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import dayjs from 'dayjs';
 import { AccessTokenEntity } from 'src/common/entities/post/session-access-token.entity';
@@ -141,6 +145,29 @@ export class SessionService {
     await this.entityManager.transaction(async (manager: EntityManager) => {
       await manager.delete(AccessTokenEntity, { refreshToken: refreshToken });
       await manager.delete(RefreshTokenEntity, { token: refreshToken.token });
+    });
+  }
+
+  async revokeRefreshTokenByID(id: string, user: UserEntity) {
+    const refreshToken = await this.entityManager.findOne(RefreshTokenEntity, {
+      select: { id: true, user: {} },
+      where: {
+        id: Equal(id),
+        user: {
+          id: Equal(user.id),
+        },
+      },
+      relations: {
+        user: true,
+      },
+    });
+    if (!refreshToken) {
+      throw new BadRequestException('token not found');
+    }
+
+    await this.entityManager.transaction(async (manager: EntityManager) => {
+      await manager.delete(AccessTokenEntity, { refreshToken: refreshToken });
+      await manager.delete(RefreshTokenEntity, { id: refreshToken.id });
     });
   }
 
