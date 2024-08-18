@@ -21,7 +21,7 @@ export class CustomErrorException extends HttpException {
       errorCode?: EErrorCode;
     },
   ) {
-    super(response, httpStatus, options.httpOptions ?? {});
+    super(response, httpStatus, options?.httpOptions ?? {});
     this.errorCode = options?.errorCode;
   }
 }
