@@ -8,6 +8,7 @@ import { CommonModule } from './common/common.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AuthGuard } from './common/guards/auth.guard';
 import { TokenRevokeGuard } from './common/guards/token-revoke.guard';
+import { IncomingInterceptor } from './common/interceptors/incoming.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { DatabaseConnectionModule } from './database/database-connection.module';
 import { postDataSourceOptions } from './database/datasource/post/post.datasource';
@@ -31,6 +32,7 @@ import { UserModule } from './v1/user/user.module';
   ],
   controllers: [AppController],
   providers: [
+    { provide: APP_INTERCEPTOR, useClass: IncomingInterceptor },
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_GUARD, useClass: TokenRevokeGuard },
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
