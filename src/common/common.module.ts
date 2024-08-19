@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { FileService } from './services/file.service';
 import { JWTService } from './services/jwt.service';
 import { MailerService } from './services/mailer.service';
+import { PasswordService } from './services/password.service';
 
 @Global()
 @Module({
@@ -12,7 +13,7 @@ import { MailerService } from './services/mailer.service';
       secret: process.env.JWT_SECRET,
     }),
   ],
-  providers: [JWTService, MailerService, FileService],
-  exports: [JWTService, MailerService, FileService],
+  providers: [JWTService, MailerService, FileService, PasswordService],
+  exports: [JWTService, MailerService, FileService, PasswordService],
 })
 export class CommonModule {}

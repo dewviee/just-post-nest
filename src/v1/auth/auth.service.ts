@@ -13,10 +13,10 @@ import { EAuthErrCode } from 'src/common/enum/auth.enum';
 import { CustomErrorException } from 'src/common/exceptions/custom-error.exception';
 import { JWTService } from 'src/common/services/jwt.service';
 import { EntityManager, Equal, Repository } from 'typeorm';
+import { PasswordService } from '../../common/services/password.service';
 import { LoginDTO } from './dto/login.dto';
 import { RegisterDTO } from './dto/register.dto';
 import { IAuthTokenInfo } from './interfaces/token.interface';
-import { PasswordService } from './password.service';
 import { SessionService } from './session.service';
 import { TokenService } from './token.service';
 
