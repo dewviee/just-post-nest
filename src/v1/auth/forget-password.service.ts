@@ -13,16 +13,19 @@ import { EntityManager } from 'typeorm';
 @Injectable()
 export class ForgetPasswordService {
   private expiredIn: { value: number; unit: ManipulateType };
+  private tokenLength: number;
+
   constructor(
     private readonly fileService: FileService,
     private readonly mailerService: MailerService,
     private readonly entityManager: EntityManager,
   ) {
     this.expiredIn = { value: 30, unit: 'minute' };
+    this.tokenLength = 200;
   }
 
   async requestResetPassword(email: string, user: UserEntity) {
-    const token = createRandomString(200);
+    const token = createRandomString(this.tokenLength);
     const resetLink = this.createResetPasswordLink(token);
 
     const html = this.createHtmlTemplate(resetLink);
