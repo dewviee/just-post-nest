@@ -2,6 +2,7 @@ import {
   BadRequestException,
   HttpStatus,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
@@ -15,7 +16,9 @@ import { JWTService } from 'src/common/services/jwt.service';
 import { EntityManager, Equal, Repository } from 'typeorm';
 import { PasswordService } from '../../common/services/password.service';
 import { LoginDTO } from './dto/login.dto';
+import { RequestPasswordResetDto } from './dto/password.reset.dto';
 import { RegisterDTO } from './dto/register.dto';
+import { ForgetPasswordService } from './forget-password.service';
 import { IAuthTokenInfo } from './interfaces/token.interface';
 import { SessionService } from './session.service';
 import { TokenService } from './token.service';
@@ -31,6 +34,7 @@ export class AuthService {
     private readonly jwtService: JWTService,
     private readonly sessionService: SessionService,
     private readonly tokenService: TokenService,
+    private readonly forgetPasswordService: ForgetPasswordService,
   ) {}
 
   async register(body: RegisterDTO) {
@@ -83,6 +87,16 @@ export class AuthService {
     });
 
     return accessToken;
+  }
+
+  async requestResetPassword(body: RequestPasswordResetDto) {
+    const user = await this.userRepo.findOneBy({ email: Equal(body.email) });
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+
+    await this.forgetPasswordService.requestResetPassword(body.email, user);
+  }
   }
 
   async refreshToken(req: Request) {
