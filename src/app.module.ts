@@ -14,6 +14,7 @@ import { DatabaseConnectionModule } from './database/database-connection.module'
 import { postDataSourceOptions } from './database/datasource/post/post.datasource';
 import getEnv from './utils/get-env';
 import { AuthModule } from './v1/auth/auth.module';
+import { OTPModule } from './v1/otp/otp.module';
 import { PostModule } from './v1/post/post.module';
 import { UserModule } from './v1/user/user.module';
 
@@ -29,6 +30,7 @@ import { UserModule } from './v1/user/user.module';
     AuthModule,
     CommonModule,
     UserModule,
+    OTPModule,
   ],
   controllers: [AppController],
   providers: [
