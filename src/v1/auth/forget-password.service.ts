@@ -7,8 +7,11 @@ import { EMailerBodyType } from 'src/common/enum/mailer.enum';
 import { ETemplateFileName } from 'src/common/enum/template-file.enum';
 import { FileService } from 'src/common/services/file.service';
 import { MailerService } from 'src/common/services/mailer.service';
-import { createRandomString } from 'src/utils/random.utils';
-import { EntityManager } from 'typeorm';
+import {
+  createRandomString,
+  generateUniqueString,
+} from 'src/utils/random.utils';
+import { EntityManager, Equal } from 'typeorm';
 
 @Injectable()
 export class ForgetPasswordService {
@@ -25,7 +28,7 @@ export class ForgetPasswordService {
   }
 
   async requestResetPassword(email: string, user: UserEntity) {
-    const token = createRandomString(this.tokenLength);
+    const token = await this.generateResetPasswordToken();
     const resetLink = this.createResetPasswordLink(token);
 
     const html = this.createHtmlTemplate(resetLink);
@@ -67,5 +70,29 @@ export class ForgetPasswordService {
       link: resetLink,
     });
     return html;
+  }
+
+  private async generateResetPasswordToken(): Promise<string> {
+    const token = this.generateToken();
+
+    if (await this.isTokenExist(token)) {
+      return await this.generateResetPasswordToken();
+    }
+    return token;
+  }
+
+  private async isTokenExist(tokenString: string) {
+    const token = await this.entityManager.findOneBy(UserPasswordResetEntity, {
+      token: Equal(tokenString),
+    });
+    if (token) return true;
+    return false;
+  }
+
+  private generateToken(): string {
+    const timestamp = generateUniqueString();
+    const randomString = createRandomString(this.tokenLength);
+
+    return `${timestamp}${randomString}`;
   }
 }
