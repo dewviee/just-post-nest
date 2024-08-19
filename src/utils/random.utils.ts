@@ -7,3 +7,11 @@ export function createRandomString(length: number): string {
   }
   return result.join('');
 }
+
+/**
+ * possible max length of this will be like 12 character
+ * Source: https://chatgpt.com/share/aff00c3f-af60-4090-8f5f-a95d4965abd3 */
+export function generateUniqueString(): string {
+  const timestamp = Date.now().toString(36);
+  return `${timestamp}`;
+}
