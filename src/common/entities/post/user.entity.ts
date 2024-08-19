@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { RefreshTokenEntity } from './session-refresh-token.entity';
+import { UserPasswordResetEntity } from './user-password-reset.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity {
@@ -30,4 +31,10 @@ export class UserEntity {
 
   @OneToMany(() => RefreshTokenEntity, (refreshToken) => refreshToken.user)
   refreshToken: RefreshTokenEntity[];
+
+  @OneToMany(
+    () => UserPasswordResetEntity,
+    (userPasswordReset) => userPasswordReset.user,
+  )
+  userPasswordReset: UserPasswordResetEntity[];
 }
