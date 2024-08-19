@@ -6,3 +6,11 @@ export class RequestPasswordResetDto {
   email: string;
 }
 
+export class PasswordResetDto {
+  @IsString()
+  token: string;
+
+  @IsString()
+  @MaxLength(100)
+  password: string;
+}

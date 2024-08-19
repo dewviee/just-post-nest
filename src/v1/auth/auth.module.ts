@@ -3,7 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommonModule } from 'src/common/common.module';
 import { AccessTokenEntity } from 'src/common/entities/post/session-access-token.entity';
 import { RefreshTokenEntity } from 'src/common/entities/post/session-refresh-token.entity';
+import { UserPasswordResetEntity } from 'src/common/entities/post/user-password-reset.entity';
 import { UserEntity } from 'src/common/entities/post/user.entity';
+import { UserModule } from '../user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { ForgetPasswordService } from './forget-password.service';
@@ -14,10 +16,12 @@ import { TokenService } from './token.service';
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
+      UserPasswordResetEntity,
       AccessTokenEntity,
       RefreshTokenEntity,
     ]),
     CommonModule,
+    UserModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, SessionService, TokenService, ForgetPasswordService],

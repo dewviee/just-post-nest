@@ -12,7 +12,10 @@ import { User } from 'src/common/decorators/user.decorator';
 import { UserEntity } from 'src/common/entities/post/user.entity';
 import { AuthService } from './auth.service';
 import { LoginDTO } from './dto/login.dto';
-import { RequestPasswordResetDto } from './dto/password.reset.dto';
+import {
+  PasswordResetDto,
+  RequestPasswordResetDto,
+} from './dto/password-reset.dto';
 import { RegisterDTO } from './dto/register.dto';
 import { RevokeTokenDTO } from './dto/revoke.dto';
 import { SessionService } from './session.service';
@@ -43,6 +46,12 @@ export class AuthController {
   @Post('/forget-password')
   async forgetPassword(@Body() body: RequestPasswordResetDto) {
     await this.authService.requestResetPassword(body);
+  }
+
+  @Public()
+  @Post('/reset-password')
+  async resetPassword(@Body() body: PasswordResetDto) {
+    return await this.authService.passwordReset(body);
   }
 
   @Public()

@@ -9,14 +9,18 @@ import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import dayjs from 'dayjs';
 import { Request, Response } from 'express';
 import { RefreshTokenEntity } from 'src/common/entities/post/session-refresh-token.entity';
+import { UserPasswordResetEntity } from 'src/common/entities/post/user-password-reset.entity';
 import { UserEntity } from 'src/common/entities/post/user.entity';
-import { EAuthErrCode } from 'src/common/enum/auth.enum';
+import { EAuthErrCode, EResetPwdErrCode } from 'src/common/enum/auth.enum';
 import { CustomErrorException } from 'src/common/exceptions/custom-error.exception';
 import { JWTService } from 'src/common/services/jwt.service';
 import { EntityManager, Equal, Repository } from 'typeorm';
 import { PasswordService } from '../../common/services/password.service';
 import { LoginDTO } from './dto/login.dto';
-import { RequestPasswordResetDto } from './dto/password.reset.dto';
+import {
+  PasswordResetDto,
+  RequestPasswordResetDto,
+} from './dto/password-reset.dto';
 import { RegisterDTO } from './dto/register.dto';
 import { ForgetPasswordService } from './forget-password.service';
 import { IAuthTokenInfo } from './interfaces/token.interface';
@@ -30,6 +34,8 @@ export class AuthService {
     private readonly userRepo: Repository<UserEntity>,
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
+    @InjectRepository(UserPasswordResetEntity)
+    private readonly userPassResetRepo: Repository<UserPasswordResetEntity>,
     private readonly passwordService: PasswordService,
     private readonly jwtService: JWTService,
     private readonly sessionService: SessionService,
@@ -97,6 +103,59 @@ export class AuthService {
 
     await this.forgetPasswordService.requestResetPassword(body.email, user);
   }
+
+  async passwordReset(body: PasswordResetDto) {
+    const tokenInfo = await this.userPassResetRepo.findOne({
+      select: {
+        user: {
+          id: true,
+        },
+      },
+      where: { token: Equal(body.token) },
+      relations: { user: true },
+    });
+
+    if (!tokenInfo) {
+      throw new CustomErrorException(
+        'reset password token not found',
+        HttpStatus.BAD_REQUEST,
+        { errorCode: EResetPwdErrCode.TOKEN_NOT_FOUND },
+      );
+    }
+
+    if (tokenInfo.isUse) {
+      throw new CustomErrorException(
+        'reset password token already used',
+        HttpStatus.BAD_REQUEST,
+        { errorCode: EResetPwdErrCode.TOKEN_USED },
+      );
+    }
+
+    if (dayjs().isAfter(tokenInfo.expiredAt)) {
+      throw new CustomErrorException(
+        'reset password token already expired',
+        HttpStatus.BAD_REQUEST,
+        { errorCode: EResetPwdErrCode.TOKEN_EXPIRED },
+      );
+    }
+
+    const hashedPassword = await this.passwordService.hash(body.password);
+    await this.entityManager.transaction(async (manager: EntityManager) => {
+      tokenInfo.isUse = true;
+      await manager.save(tokenInfo);
+
+      await manager.update(
+        UserPasswordResetEntity,
+        { isUse: false, user: tokenInfo.user },
+        { expiredAt: dayjs().toDate() },
+      );
+
+      await manager.update(
+        UserEntity,
+        { id: tokenInfo.user.id },
+        { password: hashedPassword },
+      );
+    });
   }
 
   async refreshToken(req: Request) {

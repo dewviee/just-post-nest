@@ -1,4 +1,4 @@
-export type EErrorCode = EAuthErrCode;
+export type EErrorCode = EAuthErrCode | EResetPwdErrCode;
 
 export enum EAuthErrCode {
   TOKEN_OK = 100,
@@ -9,4 +9,10 @@ export enum EAuthErrCode {
   REFRESH_TOKEN_REVOKE = 301,
   REFRESH_TOKEN_EXPIRED = 302,
   REFRESH_TOKEN_INVALID = 304,
+}
+
+export enum EResetPwdErrCode {
+  TOKEN_USED = 401,
+  TOKEN_NOT_FOUND = 404,
+  TOKEN_EXPIRED = 405,
 }
