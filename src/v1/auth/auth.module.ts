@@ -6,7 +6,6 @@ import { RefreshTokenEntity } from 'src/common/entities/post/session-refresh-tok
 import { UserEntity } from 'src/common/entities/post/user.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { PasswordService } from './password.service';
 import { SessionService } from './session.service';
 import { TokenService } from './token.service';
 
@@ -20,7 +19,7 @@ import { TokenService } from './token.service';
     CommonModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, PasswordService, SessionService, TokenService],
+  providers: [AuthService, SessionService, TokenService],
   exports: [SessionService],
 })
 export class AuthModule {}
