@@ -16,12 +16,12 @@ import { CustomErrorException } from 'src/common/exceptions/custom-error.excepti
 import { JWTService } from 'src/common/services/jwt.service';
 import { EntityManager, Equal, Repository } from 'typeorm';
 import { PasswordService } from '../../common/services/password.service';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 import { LoginDTO } from './dto/login.dto';
 import {
   PasswordResetDto,
   RequestPasswordResetDto,
 } from './dto/password-reset.dto';
-import { RegisterDTO } from './dto/register.dto';
 import { ForgetPasswordService } from './forget-password.service';
 import { IAuthTokenInfo } from './interfaces/token.interface';
 import { SessionService } from './session.service';
@@ -43,7 +43,7 @@ export class AuthService {
     private readonly forgetPasswordService: ForgetPasswordService,
   ) {}
 
-  async register(body: RegisterDTO) {
+  async register(body: CreateUserDto) {
     body.password = await this.passwordService.hash(body.password, 10);
 
     const user = this.userRepo.create({

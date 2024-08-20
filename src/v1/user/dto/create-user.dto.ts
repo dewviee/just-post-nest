@@ -8,8 +8,8 @@ import {
   ValidateIf,
 } from 'class-validator';
 
-export class UserDTO {
-  @ValidateIf((req: UserDTO) => isNotEmpty(req.id))
+export class CreateUserDto {
+  @ValidateIf((req: CreateUserDto) => isNotEmpty(req.id))
   @IsUUID()
   id: string;
 
