@@ -22,7 +22,7 @@ export class UserPasswordResetEntity {
   @Column({ type: 'timestamptz' })
   expiredAt: Date;
 
-  @Column({ type: 'boolean', default: 'false' })
+  @Column({ type: 'boolean', default: false })
   isUse: boolean;
 
   @ManyToOne(() => UserEntity, (user) => user.userPasswordReset)
