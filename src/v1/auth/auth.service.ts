@@ -16,12 +16,13 @@ import { CustomErrorException } from 'src/common/exceptions/custom-error.excepti
 import { JWTService } from 'src/common/services/jwt.service';
 import { EntityManager, Equal, Repository } from 'typeorm';
 import { PasswordService } from '../../common/services/password.service';
+import { CreateUserDto } from '../user/dto/create-user.dto';
+import { UserService } from '../user/user.service';
 import { LoginDTO } from './dto/login.dto';
 import {
   PasswordResetDto,
   RequestPasswordResetDto,
 } from './dto/password-reset.dto';
-import { RegisterDTO } from './dto/register.dto';
 import { ForgetPasswordService } from './forget-password.service';
 import { IAuthTokenInfo } from './interfaces/token.interface';
 import { SessionService } from './session.service';
@@ -41,10 +42,28 @@ export class AuthService {
     private readonly sessionService: SessionService,
     private readonly tokenService: TokenService,
     private readonly forgetPasswordService: ForgetPasswordService,
+    private readonly userService: UserService,
   ) {}
 
-  async register(body: RegisterDTO) {
-    body.password = await this.passwordService.hash(body.password, 10);
+  async register(body: CreateUserDto) {
+    const [hashedPassword, users] = await Promise.all([
+      this.passwordService.hash(body.password, 10),
+      this.userService.findConflictingUserInfo(body),
+    ]);
+
+    if (users.length > 0) {
+      const errorFields: string[] = [];
+      if (users.find((user) => user.username === body.username))
+        errorFields.push(`'${body.username}' `);
+      if (users.find((user) => user.email === body.email))
+        errorFields.push(`'${body.email}'`);
+
+      throw new BadRequestException(
+        `[${errorFields.join(', ')}] already exist`,
+      );
+    }
+
+    body.password = hashedPassword;
 
     const user = this.userRepo.create({
       ...body,

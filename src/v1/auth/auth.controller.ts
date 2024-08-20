@@ -10,13 +10,13 @@ import { Request as RequestEx, Response as ResponseEx } from 'express';
 import { Public } from 'src/common/decorators/public.decorator';
 import { User } from 'src/common/decorators/user.decorator';
 import { UserEntity } from 'src/common/entities/post/user.entity';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { LoginDTO } from './dto/login.dto';
 import {
   PasswordResetDto,
   RequestPasswordResetDto,
 } from './dto/password-reset.dto';
-import { RegisterDTO } from './dto/register.dto';
 import { RevokeTokenDTO } from './dto/revoke.dto';
 import { SessionService } from './session.service';
 
@@ -29,7 +29,7 @@ export class AuthController {
 
   @Public()
   @Post('/register')
-  async register(@Body() body: RegisterDTO) {
+  async register(@Body() body: CreateUserDto) {
     return await this.authService.register(body);
   }
 

@@ -4,6 +4,7 @@ import { AccessTokenEntity } from 'src/common/entities/post/session-access-token
 import { UserEntity } from 'src/common/entities/post/user.entity';
 import { Equal, FindOptionsWhere, Repository } from 'typeorm';
 import { PasswordService } from '../../common/services/password.service';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -49,13 +50,7 @@ export class UserService {
   async updateUserProfile(id: string, body: UpdateUserDto) {
     const user = await this.userRepo.findOneBy({ id });
 
-    const isUserExist = await this.userRepo
-      .createQueryBuilder('user')
-      .where('user.email = :email OR LOWER(user.username) = LOWER(:username)', {
-        email: body.email,
-        username: body.username,
-      })
-      .getMany();
+    const isUserExist = await this.findConflictingUserInfo(body);
 
     if (isUserExist.filter((o) => o.id !== user.id).length > 0) {
       throw new BadRequestException('username or email already exist');
@@ -83,5 +78,15 @@ export class UserService {
 
   async getUserBy(options: FindOptionsWhere<UserEntity>) {
     return await this.userRepo.findOneBy(options);
+  }
+
+  findConflictingUserInfo(body: CreateUserDto | UpdateUserDto) {
+    return this.userRepo
+      .createQueryBuilder('user')
+      .where('user.email = :email OR LOWER(user.username) = LOWER(:username)', {
+        email: body.email,
+        username: body.username,
+      })
+      .getMany();
   }
 }
