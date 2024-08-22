@@ -33,6 +33,9 @@ export class TokenRevokeGuard implements CanActivate {
       refreshToken: extractRefreshTokenFromHeader(request),
     };
 
+    if (!token.accessToken) throw this.invalidAccessTokenError();
+    if (!token.refreshToken) throw this.invalidRefreshTokenError();
+
     if (await this.sessionService.isTokenRevoke(token)) {
       throw new CustomErrorException(
         'token has been revoked',
@@ -41,5 +44,21 @@ export class TokenRevokeGuard implements CanActivate {
       );
     }
     return true;
+  }
+
+  private invalidAccessTokenError() {
+    return new CustomErrorException(
+      'invalid access token',
+      HttpStatus.UNAUTHORIZED,
+      { errorCode: EAuthErrCode.ACCESS_TOKEN_INVALID },
+    );
+  }
+
+  private invalidRefreshTokenError() {
+    return new CustomErrorException(
+      'invalid refresh token',
+      HttpStatus.UNAUTHORIZED,
+      { errorCode: EAuthErrCode.REFRESH_TOKEN_INVALID },
+    );
   }
 }
