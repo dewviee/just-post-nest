@@ -245,4 +245,15 @@ export class AuthService {
 
     await this.sessionService.revokeRefreshToken(refreshTokenString);
   }
+
+  async logout(request: Request, response: Response) {
+    await this.revokeRefreshToken(request);
+
+    response.cookie('refreshToken', '', {
+      httpOnly: true,
+      expires: dayjs(0).toDate(),
+    });
+
+    response.status(HttpStatus.OK).json();
+  }
 }
