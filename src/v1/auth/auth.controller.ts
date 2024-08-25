@@ -87,4 +87,12 @@ export class AuthController {
   async revokeAllRefreshToken(@User() user: UserEntity) {
     await this.sessionService.revokeAllToken(user);
   }
+
+  @Post('/logout')
+  async logout(
+    @Request() request: RequestEx,
+    @Response() response: ResponseEx,
+  ) {
+    await this.authService.logout(request, response);
+  }
 }
