@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostEntity } from 'src/common/entities/post/post.entity';
+import { UserEntity } from 'src/common/entities/post/user.entity';
 import { Repository } from 'typeorm';
 import { CreatePostDTO } from './dto/create-post.dto';
 import { GetPostDTO } from './dto/get-posts.dto';
@@ -14,24 +15,43 @@ export class PostService {
     private readonly postGetFeed: PostGetFeedService,
   ) {}
 
-  async createPost(body: CreatePostDTO) {
+  async createPost(body: CreatePostDTO, user: UserEntity) {
     const post = this.postRepo.create({
       content: body.content,
+      user: user,
     });
 
-    return await this.postRepo.save(post);
+    const createdPost = await this.postRepo.save(post);
+    createdPost.user = undefined;
+
+    return createdPost;
   }
 
   async getNextPost(body: GetPostDTO) {
     const offset = await this.postGetFeed.getPostOffset(body);
 
     const posts = await this.postRepo.find({
-      select: ['id', 'content', 'createdAt', 'updatedAt'],
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        user: {
+          id: true,
+          username: true,
+        },
+      },
+      relations: { user: true },
       order: { createdAt: body.orderBy },
       take: body.quantity,
       skip: offset,
     });
 
-    return posts;
+    const formattedPost = posts.map((post) => {
+      if (post.user) post.user.id = undefined;
+      return post;
+    });
+
+    return formattedPost;
   }
 }

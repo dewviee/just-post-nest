@@ -1,4 +1,6 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { User } from 'src/common/decorators/user.decorator';
+import { UserEntity } from 'src/common/entities/post/user.entity';
 import { CreatePostDTO } from './dto/create-post.dto';
 import { GetPostDTO } from './dto/get-posts.dto';
 import { PostService } from './post.service';
@@ -8,8 +10,8 @@ export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Post('/')
-  async createPost(@Body() body: CreatePostDTO) {
-    return this.postService.createPost(body);
+  async createPost(@Body() body: CreatePostDTO, @User() user: UserEntity) {
+    return this.postService.createPost(body, user);
   }
 
   @Get('/')

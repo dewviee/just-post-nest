@@ -1,10 +1,15 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import {
+  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { UserEntity } from './user.entity';
 
 @Entity()
 export class PostEntity {
@@ -19,4 +24,15 @@ export class PostEntity {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
+
+  @ManyToOne(() => UserEntity, (user) => user.post)
+  @JoinColumn()
+  user: UserEntity;
+
+  @BeforeInsert()
+  validateUser() {
+    if (!this.user) {
+      throw new InternalServerErrorException('user in post must not be empty');
+    }
+  }
 }
