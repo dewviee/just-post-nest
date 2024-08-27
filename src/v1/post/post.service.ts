@@ -31,12 +31,27 @@ export class PostService {
     const offset = await this.postGetFeed.getPostOffset(body);
 
     const posts = await this.postRepo.find({
-      select: ['id', 'content', 'createdAt', 'updatedAt'],
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        user: {
+          id: true,
+          username: true,
+        },
+      },
+      relations: { user: true },
       order: { createdAt: body.orderBy },
       take: body.quantity,
       skip: offset,
     });
 
-    return posts;
+    const formattedPost = posts.map((post) => {
+      if (post.user) post.user.id = undefined;
+      return post;
+    });
+
+    return formattedPost;
   }
 }
