@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostEntity } from 'src/common/entities/post/post.entity';
+import { UserEntity } from 'src/common/entities/post/user.entity';
 import { Repository } from 'typeorm';
 import { CreatePostDTO } from './dto/create-post.dto';
 import { GetPostDTO } from './dto/get-posts.dto';
@@ -14,12 +15,16 @@ export class PostService {
     private readonly postGetFeed: PostGetFeedService,
   ) {}
 
-  async createPost(body: CreatePostDTO) {
+  async createPost(body: CreatePostDTO, user: UserEntity) {
     const post = this.postRepo.create({
       content: body.content,
+      user: user,
     });
 
-    return await this.postRepo.save(post);
+    const createdPost = await this.postRepo.save(post);
+    createdPost.user = undefined;
+
+    return createdPost;
   }
 
   async getNextPost(body: GetPostDTO) {
