@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { CreatePostDTO } from './dto/create-post.dto';
 import { GetPostDTO } from './dto/get-posts.dto';
 import { PostService } from './post.service';
@@ -13,7 +13,7 @@ export class PostController {
   }
 
   @Get('/')
-  async getPost(@Body() body: GetPostDTO) {
+  async getPost(@Query() body: GetPostDTO) {
     return await this.postService.getNextPost(body);
   }
 }

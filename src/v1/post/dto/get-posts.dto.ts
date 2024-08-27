@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsEnum,
   isNotEmpty,
@@ -17,6 +18,7 @@ export class GetPostDTO {
   @IsUUID(4)
   latestLoadID?: string;
 
+  @Type(() => Number)
   @IsNumber()
   @Min(1)
   @Max(10)
