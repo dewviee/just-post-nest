@@ -69,7 +69,9 @@ export class AuthService {
       ...body,
     });
 
-    return await this.userRepo.save(user);
+    const savedUser = await this.userRepo.save(user);
+    savedUser.password = undefined;
+    return savedUser;
   }
 
   async login(body: LoginDTO, res: Response) {
