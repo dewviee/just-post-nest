@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Post,
   Request,
@@ -61,7 +62,7 @@ export class AuthController {
   }
 
   @Public()
-  @Post('/refresh/refresh-token')
+  @Get('/refresh/refresh-token')
   async refreshRefreshToken(
     @Request() request: RequestEx,
     @Response() response: ResponseEx,
