@@ -22,9 +22,13 @@ export class PostService {
     });
 
     const createdPost = await this.postRepo.save(post);
+
+    const userData = {
+      username: createdPost.user.username,
+    };
     createdPost.user = undefined;
 
-    return createdPost;
+    return { ...createdPost, user: userData };
   }
 
   async getNextPost(body: GetPostDTO) {
