@@ -11,7 +11,7 @@ export class PostController {
 
   @Post('/')
   async createPost(@Body() body: CreatePostDTO, @User() user: UserEntity) {
-    return this.postService.createPost(body, user);
+    return await this.postService.createPost(body, user);
   }
 
   @Get('/')
