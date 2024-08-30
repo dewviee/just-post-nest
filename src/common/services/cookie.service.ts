@@ -6,10 +6,13 @@ export class CookieService {
   defaultOpt: CookieOptions;
 
   constructor() {
-    this.defaultOpt = {
-      httpOnly: true,
-      sameSite: 'lax',
-    };
+    this.defaultOpt.httpOnly = true;
+
+    if (process.env.TYPE == 'prod') {
+      this.defaultOpt.sameSite = 'lax';
+    } else {
+      this.defaultOpt.sameSite = 'none';
+    }
   }
 
   set(
