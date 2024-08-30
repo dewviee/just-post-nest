@@ -13,6 +13,7 @@ import { UserPasswordResetEntity } from 'src/common/entities/post/user-password-
 import { UserEntity } from 'src/common/entities/post/user.entity';
 import { EAuthErrCode, EResetPwdErrCode } from 'src/common/enum/auth.enum';
 import { CustomErrorException } from 'src/common/exceptions/custom-error.exception';
+import { CookieService } from 'src/common/services/cookie.service';
 import { JWTService } from 'src/common/services/jwt.service';
 import { EntityManager, Equal, Repository } from 'typeorm';
 import { PasswordService } from '../../common/services/password.service';
@@ -43,6 +44,7 @@ export class AuthService {
     private readonly tokenService: TokenService,
     private readonly forgetPasswordService: ForgetPasswordService,
     private readonly userService: UserService,
+    private readonly cookieService: CookieService,
   ) {}
 
   async register(body: CreateUserDto) {
@@ -108,10 +110,7 @@ export class AuthService {
 
     await this.sessionService.login(accessToken, refreshToken, user);
 
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      expires: dayjs().add(7, 'day').toDate(),
-    });
+    this.setRefreshTokenCookie(res, refreshToken);
 
     return accessToken;
   }
@@ -236,10 +235,7 @@ export class AuthService {
       newRefreshToken,
     );
 
-    res.cookie('refreshToken', newRefreshToken, {
-      httpOnly: true,
-      expires: dayjs().add(7, 'day').toDate(),
-    });
+    this.setRefreshTokenCookie(res, newRefreshToken);
   }
 
   async revokeRefreshToken(req: Request) {
@@ -251,11 +247,35 @@ export class AuthService {
   async logout(request: Request, response: Response) {
     await this.revokeRefreshToken(request);
 
-    response.cookie('refreshToken', '', {
-      httpOnly: true,
-      expires: dayjs(0).toDate(),
-    });
+    this.removeRefreshTokenCookies(response);
 
     response.status(HttpStatus.OK).json();
+  }
+
+  private setRefreshTokenCookie(
+    res: Response<any, Record<string, any>>,
+    token: string,
+  ) {
+    const expiredDate = dayjs().add(7, 'day').toDate();
+
+    this.cookieService.set(
+      'refreshToken',
+      token,
+      {
+        expires: expiredDate,
+      },
+      res,
+    );
+  }
+
+  private removeRefreshTokenCookies(res: Response<any, Record<string, any>>) {
+    this.cookieService.set(
+      'refreshToken',
+      '',
+      {
+        expires: dayjs(0).toDate(),
+      },
+      res,
+    );
   }
 }
