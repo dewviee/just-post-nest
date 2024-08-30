@@ -6,7 +6,7 @@ export class CookieService {
   defaultOpt: CookieOptions;
 
   constructor() {
-    this.defaultOpt.httpOnly = true;
+    this.defaultOpt = { httpOnly: true };
 
     if (process.env.TYPE == 'prod') {
       this.defaultOpt.sameSite = 'lax';
