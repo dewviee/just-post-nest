@@ -59,10 +59,10 @@ secrets:
   db_password:
     file: ./secrets/db_password.txt
 
-networks:
-  just-post-network:
-
-
 volumes:
   letsencrypt:
     name: letsencrypt_keys
+
+networks:
+  just-post-network:
+    external: true
