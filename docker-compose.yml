@@ -1,0 +1,68 @@
+version: '3.8'
+services:
+  nginx:
+    container_name: just-post-nginx
+    restart: unless-stopped
+    image: nginx:1.27.1-alpine
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - just-post-network
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - letsencrypt:/etc/letsencrypt:ro
+
+  certbot:
+    container_name: just-post-certbot
+    image: certbot/certbot:latest
+    ports:
+      - 80:80
+    command: sh -c "certbot certonly --standalone -d dewvie.servehttp.com --text --agree-tos --email was.dew4546@gmail.com --server https://acme-v02.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --keep-until-expiring --preferred-challenges=http"
+    entrypoint: ""
+    volumes:
+      - "letsencrypt:/etc/letsencrypt"
+    environment:
+      - TERM=xterm
+
+  db:
+    container_name: just-post-db
+    image: postgres:14.1-alpine
+    command: [ 'postgres', '-c', 'log_statement=all' ]
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: just-post
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/create_user.sql
+    restart: always
+    networks:
+      - just-post-network
+
+  backend:
+    container_name: just-post-backend
+    depends_on:
+      - db
+    restart: on-failure:1
+    build: .
+    ports:
+      - 8000:8000
+    networks:
+      - just-post-network
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+
+volumes:
+  letsencrypt:
+    name: letsencrypt_keys
+
+networks:
+  just-post-network:
+    external: true
