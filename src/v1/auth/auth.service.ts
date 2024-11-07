@@ -8,6 +8,7 @@ import {
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import dayjs from 'dayjs';
 import { Request, Response } from 'express';
+import { JsonWebTokenError } from 'jsonwebtoken';
 import { RefreshTokenEntity } from 'src/common/entities/post/session-refresh-token.entity';
 import { UserPasswordResetEntity } from 'src/common/entities/post/user-password-reset.entity';
 import { UserEntity } from 'src/common/entities/post/user.entity';
@@ -180,9 +181,25 @@ export class AuthService {
 
   async refreshToken(req: Request) {
     const refreshToken: string = req.cookies.refreshToken;
-    const data: IAuthTokenInfo = await this.jwtService.decode(refreshToken, {
-      jwtVerifyOptions: { secret: process.env.JWT_SECRET_REFRESH },
-    });
+    let data: IAuthTokenInfo;
+    try {
+      data = await this.jwtService.decode(refreshToken, {
+        jwtVerifyOptions: {
+          secret: process.env.JWT_SECRET_REFRESH,
+          ignoreExpiration: true,
+        },
+      });
+
+      if (!refreshToken) {
+        throw new JsonWebTokenError('no refresh token provide');
+      }
+    } catch (error) {
+      if (error instanceof JsonWebTokenError)
+        throw new CustomErrorException(error.message, HttpStatus.UNAUTHORIZED, {
+          errorCode: EAuthErrCode.REFRESH_TOKEN_INVALID,
+        });
+      throw error;
+    }
 
     if (await this.sessionService.isRefreshTokenRevoke(refreshToken)) {
       throw new CustomErrorException(
