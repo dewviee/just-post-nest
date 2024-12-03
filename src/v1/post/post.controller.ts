@@ -29,11 +29,21 @@ export class PostController {
   }
 
   @Get('/')
-  async getPost(@Query() body: GetPostDTO) {
+  async getPost(@Query() body: GetPostDTO, @User() user: UserEntity) {
     const posts = await this.postService.getNextPost(body);
-    const likes = await this.postLikeService.countLikeFromPosts(posts);
 
-    const postsWithLikes = combinePostsWithLikes(posts, likes);
+    const countLikesJob = this.postLikeService.countLikeFromPosts(posts);
+    const isUserLikePostsJob = this.postLikeService.isUserLikePosts(
+      posts,
+      user.id,
+    );
+
+    const [likes, isUserLikePosts] = await Promise.all([
+      countLikesJob,
+      isUserLikePostsJob,
+    ]);
+
+    const postsWithLikes = combinePostsWithLikes(posts, likes, isUserLikePosts);
     return postsWithLikes.map(({ user, ...rest }) => ({
       ...rest,
       user: user ? { ...user, id: undefined } : undefined,
