@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { User } from 'src/common/decorators/user.decorator';
 import { UserEntity } from 'src/common/entities/post/user.entity';
+import { combinePostsWithLikes } from 'src/utils/post';
 import { CreatePostDTO } from './dto/create-post.dto';
 import { GetPostDTO } from './dto/get-posts.dto';
 import { LikePostDto } from './dto/like-post.dto';
@@ -29,7 +30,14 @@ export class PostController {
 
   @Get('/')
   async getPost(@Query() body: GetPostDTO) {
-    return await this.postService.getNextPost(body);
+    const posts = await this.postService.getNextPost(body);
+    const likes = await this.postLikeService.countLikeFromPosts(posts);
+
+    const postsWithLikes = combinePostsWithLikes(posts, likes);
+    return postsWithLikes.map(({ user, ...rest }) => ({
+      ...rest,
+      user: user ? { ...user, id: undefined } : undefined,
+    }));
   }
 
   @Post('/like/:id')

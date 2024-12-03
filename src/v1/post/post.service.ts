@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PostLikeEntity } from 'src/common/entities/post/post-like.entity';
 import { PostEntity } from 'src/common/entities/post/post.entity';
 import { UserEntity } from 'src/common/entities/post/user.entity';
 import { Equal, Repository } from 'typeorm';
@@ -12,6 +13,8 @@ export class PostService {
   constructor(
     @InjectRepository(PostEntity)
     private readonly postRepo: Repository<PostEntity>,
+    @InjectRepository(PostLikeEntity)
+    private readonly postLikeRepo: Repository<PostLikeEntity>,
     private readonly postGetFeed: PostGetFeedService,
   ) {}
 
@@ -51,12 +54,7 @@ export class PostService {
       skip: offset,
     });
 
-    const formattedPost = posts.map((post) => {
-      if (post.user) post.user.id = undefined;
-      return post;
-    });
-
-    return formattedPost;
+    return posts;
   }
 
   async findPostById(postId: string) {
