@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostEntity } from 'src/common/entities/post/post.entity';
 import { UserEntity } from 'src/common/entities/post/user.entity';
-import { Repository } from 'typeorm';
+import { Equal, Repository } from 'typeorm';
 import { CreatePostDTO } from './dto/create-post.dto';
 import { GetPostDTO } from './dto/get-posts.dto';
 import { PostGetFeedService } from './post-get-feed.service';
@@ -57,5 +57,9 @@ export class PostService {
     });
 
     return formattedPost;
+  }
+
+  async findPostById(postId: string) {
+    return this.postRepo.findOneBy({ id: Equal(postId) });
   }
 }

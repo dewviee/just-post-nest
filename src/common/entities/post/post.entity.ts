@@ -6,9 +6,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { PostLikeEntity } from './post-like.entity';
 import { UserEntity } from './user.entity';
 
 @Entity()
@@ -28,6 +30,9 @@ export class PostEntity {
   @ManyToOne(() => UserEntity, (user) => user.post)
   @JoinColumn()
   user: UserEntity;
+
+  @OneToMany(() => PostLikeEntity, (postLike) => postLike.post)
+  postLike: PostLikeEntity[];
 
   @BeforeInsert()
   validateUser() {

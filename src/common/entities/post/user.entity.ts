@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { PostLikeEntity } from './post-like.entity';
 import { PostEntity } from './post.entity';
 import { RefreshTokenEntity } from './session-refresh-token.entity';
 import { UserPasswordResetEntity } from './user-password-reset.entity';
@@ -38,6 +39,9 @@ export class UserEntity {
     (userPasswordReset) => userPasswordReset.user,
   )
   userPasswordReset: UserPasswordResetEntity[];
+
+  @OneToMany(() => PostLikeEntity, (postLike) => postLike.user)
+  postLike: PostLikeEntity[];
 
   @OneToMany(() => PostEntity, (post) => post.user)
   post: PostEntity[];
