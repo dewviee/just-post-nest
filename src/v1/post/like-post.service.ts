@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostLikeEntity } from 'src/common/entities/post/post-like.entity';
+import { PostEntity } from 'src/common/entities/post/post.entity';
 import { UserEntity } from 'src/common/entities/post/user.entity';
 import { Equal, Repository } from 'typeorm';
 import { UserService } from '../user/user.service';
@@ -54,5 +55,17 @@ export class PostLikeService {
     if (!likedPost) return;
 
     await this.postLikeRepo.remove(likedPost);
+  }
+
+  async countLikeFromPosts(posts: PostEntity[]) {
+    const jobs = posts.map(async (post) => await this.countLikeFromPost(post));
+
+    return Promise.all(jobs);
+  }
+
+  async countLikeFromPost(post: PostEntity) {
+    return this.postLikeRepo.countBy({
+      post: { id: Equal(post.id) },
+    });
   }
 }
