@@ -68,4 +68,20 @@ export class PostLikeService {
       post: { id: Equal(post.id) },
     });
   }
+
+  async isUserLikePosts(posts: PostEntity[], userId: string) {
+    const jobs = posts.map((post) => this.isUserLikePost(post.id, userId));
+    return await Promise.all(jobs);
+  }
+
+  async isUserLikePost(postId: string, userId: string) {
+    return !!(await this.postLikeRepo.findOneBy({
+      user: {
+        id: Equal(userId),
+      },
+      post: {
+        id: Equal(postId),
+      },
+    }));
+  }
 }
