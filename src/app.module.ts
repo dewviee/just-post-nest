@@ -16,6 +16,7 @@ import getEnv from './utils/get-env';
 import { AuthModule } from './v1/auth/auth.module';
 import { OTPModule } from './v1/otp/otp.module';
 import { PostModule } from './v1/post/post.module';
+import { TodoModule } from './v1/todo/todo.module';
 import { UserModule } from './v1/user/user.module';
 
 @Module({
@@ -31,6 +32,7 @@ import { UserModule } from './v1/user/user.module';
     CommonModule,
     UserModule,
     OTPModule,
+    TodoModule,
   ],
   controllers: [AppController],
   providers: [

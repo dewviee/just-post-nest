@@ -9,6 +9,7 @@ import {
 import { PostLikeEntity } from './post-like.entity';
 import { PostEntity } from './post.entity';
 import { RefreshTokenEntity } from './session-refresh-token.entity';
+import { TodoEntity } from './todo.entity';
 import { UserPasswordResetEntity } from './user-password-reset.entity';
 
 @Entity({ name: 'user' })
@@ -45,4 +46,7 @@ export class UserEntity {
 
   @OneToMany(() => PostEntity, (post) => post.user)
   post: PostEntity[];
+
+  @OneToMany(() => TodoEntity, (todos) => todos.user)
+  todos: TodoEntity;
 }
