@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Query,
+  Version,
 } from '@nestjs/common';
 import { User } from 'src/common/decorators/user.decorator';
 import { UserEntity } from 'src/common/entities/post/user.entity';
@@ -30,6 +31,7 @@ export class PostController {
 
   @Get('/')
   async getPost(@Query() body: GetPostDTO, @User() user: UserEntity) {
+    // return await this.postService.getNextPostV2(body, user);
     const posts = await this.postService.getNextPost(body);
 
     const countLikesJob = this.postLikeService.countLikeFromPosts(posts);
@@ -48,6 +50,12 @@ export class PostController {
       ...rest,
       user: user ? { ...user, id: undefined } : undefined,
     }));
+  }
+
+  @Get('/')
+  @Version('2')
+  async getPostV2(@Query() body: GetPostDTO, @User() user: UserEntity) {
+    return await this.postService.getNextPostV2(body, user);
   }
 
   @Post('/like/:id')
