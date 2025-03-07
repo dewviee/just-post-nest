@@ -21,10 +21,8 @@ jobs:
           SSH_KEY: ${{ secrets.HOST_STAGING_SSH_KEY }}
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
         run: |
-          echo "${SSH_KEY}" >> private_key
+          echo "${SSH_KEY}" > private_key
           chmod 600 private_key
-          ssh -i private_key -o StrictHostKeyChecking=no "${HOST_USERNAME}@${HOST_IP}" << EOF
-
-          echo "Hello World!" >> hello.txt"
-      
+          ssh -i private_key -o StrictHostKeyChecking=no "${HOST_USERNAME}@${HOST_IP}" <<EOF
+          echo "Hello World!" >> hello.txt
           EOF
