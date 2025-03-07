@@ -25,6 +25,6 @@ jobs:
           chmod 600 private_key
           ssh -i private_key -o StrictHostKeyChecking=no "${HOST_USERNAME}@${HOST_IP}" << EOF
 
-          echo "Hello World! >> hello.txt"
+          echo "Hello World!" >> hello.txt"
       
           EOF
