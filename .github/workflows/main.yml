@@ -1,0 +1,30 @@
+name: CICD-STAGING-SERVER
+
+on:
+  push:
+    branches: ["test"]
+  pull_request:
+    branches: ["test"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connect to Server & Deploy
+        env:
+          HOST_USERNAME: ${{ secrets.HOST_STAGING_USERNAME }}
+          HOST_IP: ${{ secrets.HOST_STAGING_IP }}
+          SSH_KEY: ${{ secrets.HOST_STAGING_SSH_KEY }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+        run: |
+          echo "${SSH_KEY}" >> private_key
+          chmod 600 private_key
+          ssh -i private_key -o StrictHostKeyChecking=no "${HOST_USERNAME}@${HOST_IP}" << EOF
+
+          echo "Hello World! >> hello.txt"
+      
+          EOF
